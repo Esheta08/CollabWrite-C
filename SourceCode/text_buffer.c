@@ -98,7 +98,9 @@ void deleteLine(TextBuffer *buffer, int position) {
 void updateLine(TextBuffer *buffer, int position, const char *newText) {
     if (position < 0 || position >= buffer->line_count) return;
 
-    LineNode *curr = buffer->head; for(int i=0;i<position;i++) curr=curr->next;
+    LineNode *curr = buffer->head; 
+    for(int i=0;i<position;i++) 
+    curr=curr->next;
 
     EditOperation *op = (EditOperation*)malloc(sizeof(EditOperation));
     op->type = UPDATE_OP;
@@ -168,4 +170,48 @@ void redo(TextBuffer *buffer) {
     }
 
     pushOperation(buffer->undoStack, op);
+}
+
+char* buffer_to_string(TextBuffer *buffer) {
+    if (!buffer) return NULL;
+    size_t total = 1;
+    LineNode *curr = buffer->head;
+    while (curr) {
+        total += strlen(curr->line) + 1; // +1 for '\n'
+        curr = curr->next;
+    }
+
+    char *result = (char*)malloc(total);
+    if (!result) return NULL;
+    result[0] = '\0';
+
+    curr = buffer->head;
+    while (curr) {
+        strcat(result, curr->line);
+        strcat(result, "\n");
+        curr = curr->next;
+    }
+    return result;
+}
+
+int valid_position(TextBuffer *buffer, int pos) {
+    return buffer && pos >= 0 && pos <= buffer->line_count;
+}
+
+
+void clearBuffer(TextBuffer *buffer) {
+    LineNode *curr = buffer->head;
+    while (curr) {
+        LineNode *tmp = curr;
+        curr = curr->next;
+        free(tmp->line);
+        free(tmp);
+    }
+    buffer->head = buffer->tail = NULL;
+    buffer->line_count = 0;
+
+    freeStack(buffer->undoStack);
+    freeStack(buffer->redoStack);
+    buffer->undoStack = createStack();
+    buffer->redoStack = createStack();
 }

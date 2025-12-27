@@ -60,10 +60,9 @@ VersionNode* vtree_find(VersionNode *node, int id) {
 int vtree_restore(VersionTree *vt, TextBuffer *tb, int id) {
     VersionNode *n = vtree_find(vt->root, id);
     if (!n) return -1;
-    tb_free(tb);
-    tb_init(tb);
+    clearBuffer(tb);
     if (n->snapshot && n->snapshot[0] != '\0') {
-        tb_insert(tb, 0, n->snapshot);
+        insertLine(tb, 0, n->snapshot);
     }
     return 0;
 }
